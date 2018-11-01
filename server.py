@@ -1,6 +1,7 @@
 from flask import Flask
 from flask_cors import CORS
 from threading import Thread
+import socket
 
 client_conn = None
 app = Flask(__name__)
@@ -10,7 +11,7 @@ CORS(app)
 def send_mesage_to_client(msg):
     print("Sending: %s" % msg)
     if client_conn != None:
-        client_conn.send(msg)
+        client_conn.send(msg.encode('utf-8'))
         return "Sent"
     else:
         return "Client not connect"
@@ -18,7 +19,7 @@ def send_mesage_to_client(msg):
 def socket_srv():
     global client_conn
     HOST = "127.0.0.1"
-    PORT = "12345"
+    PORT = 12345
 
     # server socket setup
     server_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
@@ -26,8 +27,9 @@ def socket_srv():
     server_socket.bind((HOST, PORT))
     server_socket.listen(1) # One backlog connection
     while True:
-        client_conn, addr = s.accept()
+        client_conn, addr = server_socket.accept()
         print("Connected with " + addr[0] + ":" + str(addr[1]))
+        client_conn.sendall("Hello".encode('utf-8'))
     return server_socket
 
 def thread_srv(arg):
